@@ -3,10 +3,15 @@ import moment from 'moment';
 import { Timeline } from 'vis-timeline/standalone';
 import 'vis-timeline/styles/vis-timeline-graph2d.css';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import ZoomControls from './ZoomControls';
+import {
+  DEFAULT_DATE,
+  ROUTE_DATA,
+  TIMELINE_OPTIONS,
+  ZOOM_LEVELS,
+} from '../constants/constants';
+import GanttHeader from './GanttHeader';
 import TimelineContainer from './TimelineContainer';
-import { routes, zoomLevels } from '../constants/constants';
+import ZoomControls from './ZoomControls';
 
 const GanttChart = () => {
   const timelineRef = useRef(null);
@@ -14,50 +19,32 @@ const GanttChart = () => {
   const [zoomValue, setZoomValue] = useState(0);
 
   useEffect(() => {
-    const items = routes.flatMap((route, index) =>
+    const items = ROUTE_DATA.flatMap((route, index) =>
       route.route.map((task) => ({
         id: `${index}_${task.seq}`,
         group: index,
         content: `${task.seq}`,
         start: moment(
-          `2025-05-11 ${task.start_time}`,
+          `${DEFAULT_DATE} ${task.start_time}`,
           'YYYY-MM-DD h:mm A'
         ).toDate(),
         end: moment(
-          `2025-05-11 ${task.end_time}`,
+          `${DEFAULT_DATE} ${task.end_time}`,
           'YYYY-MM-DD h:mm A'
         ).toDate(),
       }))
     );
 
-    const groups = routes.map((_, index) => ({
+    const groups = ROUTE_DATA.map((_, index) => ({
       id: index,
       content: `Route ${index + 1}`,
     }));
-
-    const options = {
-      start: moment('2025-05-12 08:00 AM', 'YYYY-MM-DD hh:mm A').toDate(),
-      end: moment('2025-05-12 06:00 PM', 'YYYY-MM-DD hh:mm A').toDate(),
-      orientation: 'top',
-      zoomable: true,
-      moveable: true,
-      format: {
-        minorLabels: {
-          hour: 'hh:mm A',
-        },
-        majorLabels: {
-          hour: 'hh:mm A',
-        },
-      },
-      min: moment('2025-05-12 06:00 AM', 'YYYY-MM-DD hh:mm A').toDate(),
-      max: moment('2025-05-12 08:00 PM', 'YYYY-MM-DD hh:mm A').toDate(),
-    };
 
     timelineRef.current = new Timeline(
       containerRef.current,
       items,
       groups,
-      options
+      TIMELINE_OPTIONS
     );
 
     return () => {
@@ -70,8 +57,8 @@ const GanttChart = () => {
   useEffect(() => {
     if (!timelineRef.current) return;
 
-    const { hours } = zoomLevels[zoomValue];
-    const startTime = moment('2025-05-12 08:00 AM');
+    const { hours } = ZOOM_LEVELS[zoomValue];
+    const startTime = moment(`${DEFAULT_DATE} 08:00 AM`, 'YYYY-MM-DD hh:mm A');
 
     timelineRef.current.setWindow(
       startTime.toDate(),
@@ -86,11 +73,13 @@ const GanttChart = () => {
 
   return (
     <Box sx={{ p: 3, fontFamily: 'Arial, sans-serif' }}>
-      <Typography variant='h4' gutterBottom>
-        Gantt View for Route Planning
-      </Typography>
-      <ZoomControls zoomValue={zoomValue} onZoomChange={handleZoomChange} />
-      <TimelineContainer ref={containerRef} />
+      <GanttHeader />
+      <ZoomControls
+        value={zoomValue}
+        onChange={handleZoomChange}
+        levels={ZOOM_LEVELS}
+      />
+      <TimelineContainer containerRef={containerRef} />
     </Box>
   );
 };
