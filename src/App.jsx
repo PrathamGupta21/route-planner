@@ -1,12 +1,7 @@
 import GanttChart from './components/GanttChart';
 
 function App() {
-  return (
-    <>
-      Route Planner
-      <GanttChart />
-    </>
-  );
+  return <GanttChart />;
 }
 
 export default App;
